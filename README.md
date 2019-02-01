@@ -3,5 +3,5 @@
 
 
 
-* [Faveo Helpdesk Installation on Ubuntu](https://my-page-organization.github.io/Ubuntu/README.md)
+* [Faveo Helpdesk Installation on Ubuntu](https://my-page-organization.github.io/Ubuntu/)
 
