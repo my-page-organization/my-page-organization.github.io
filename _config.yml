@@ -1,18 +1,3 @@
 title: "Faveo Manual Install Documentation"
 
-theme: jekyll-theme
-
-navbar-links:
-Support:
-    - Faveo-Helpdesk Support: "https://support.faveohelpdesk.com"
-  Resources:
-    - GitHub Wikis: "https://github.com/ladybirdweb/faveo-helpdesk/wiki"
-  Author's home: "Arjun MG"
-
-# Personalize the colors in your website. Colour values can be any valid CSS colour
-navbar-col: "#F5F5F5"
-navbar-text-col: "#404040"
-navbar-children-col: "#F5F5F5"
-
-
-
+theme: jekyll-theme-minimal
