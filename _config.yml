@@ -2,12 +2,3 @@ title: "Faveo Manual Install Documentation"
 
 theme: jekyll-theme-cayman
 
-share-links-active:
-  twitter: true
-  facebook: true
-  google: false
-  linkedin: true
-
-plugins:
-  - jekyll-paginate
-  - jekyll-sitemap
