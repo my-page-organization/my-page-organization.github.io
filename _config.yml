@@ -1,2 +1,11 @@
 title: "Faveo Manual Install Documentation"
+
 theme: jekyll-theme-modernist
+
+navbar-links:
+Support:
+    - Faveo-Helpdesk Support: "https://support.faveohelpdesk.com"
+  Resources:
+    - GitHub Wikis: "https://github.com/ladybirdweb/faveo-helpdesk/wiki"
+  Author's home: "Arjun MG"
+
