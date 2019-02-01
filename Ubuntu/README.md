@@ -60,6 +60,7 @@ In this step we install following
 * Curl
 * OpenSSL
 * Apache
+
 ```
 apt-get install -y curl git apache2
 
