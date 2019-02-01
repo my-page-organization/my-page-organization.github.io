@@ -1,243 +1,111 @@
-## Introduction
-This document will list on how to install Faveo Helpdesk on a new CentOS server.
-
-We will install following dependencies in order to make Faveo Helpdesk work
-* Apache
-* PHP 7.1
-* PHP Extensions: listed in [server requirement](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Server-Requirements)
-* MySQL/MariaDB
-* Composer
-* Cron Job
-
-Read the detailed list of [server requirement](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Server-Requirements)
-
-We are using vi editor throughout to open and edit file, you can use nano editor also
-
-## Configure IP Tables
-Please note that you have to make changes in the iptables configurations. This allows to open ports that are necessary in Faveo installation.
-
-This is an **optional step**, If you are able to access your server remotely on Public IP. This step will not be required. Mainly on local network server this step is required. If you are purchasing/renting server in a data center this step might not be required.
-
-```
-iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-
-iptables -A OUTPUT -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED -j ACCEPT
-
-iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-
-iptables -A OUTPUT -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
-
-iptables -A INPUT -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-
-iptables -A OUTPUT -p tcp --sport 443 -m conntrack --ctstate ESTABLISHED -j ACCEPT
-```
-
-**PS:**
-* You have to reset the firewall and iptables to your specifications
-* This step might vary for different data centres or cloud service providers, Please check with your hosting company on opening port number and correct settings
-
-## Download EPEL keys
-```
-rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-
-rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-```
-
-## Update Yum
-```
-yum update -y
-```
-
-In this step we install following
-
-* PHP and Extensions
-* MariaDB
-* Git
-* Curl
-* Openssl
-
-## Start Installation
-```
-yum install -y git curl openssl httpd 
-
-yum install -y  php71w-cli.x86_64 php71w-common.x86_64 php71w-fpm.x86_64 php71w-gd.x86_64 php71w-mbstring.x86_64 php71w-mcrypt.x86_64 php71w-mysql.x86_64 php71w-odbc.x86_64 php71w-pdo.x86_64 php71w-xml.x86_64 mod_php71w php71w-opcache php71w-imap.x86_64 php71w-bcmath.x86_64                                                                            
-```
-### Start Apache service
-```
-systemctl start httpd
-```
-You can do a spot check right away to verify that everything went as planned by visiting your server's public IP address in your web browser (see the note under the next heading to find out what your public IP address is if you do not have this information already):
-```
-http://your_server_IP_address/
-```
-You will see the default CentOS 7 Apache web page, which is there for informational and testing purposes. It should look something like this:
-
-![Httpd default page](https://faveohelpdesk.com/user-manual/images/faveoinstallation-centos7-apache/Httpd%20default%20page.jpg)
-
-If you are able to see this default page then continue to next step. If not review your basic server settings again
-
-
-### Install,Start Mysql and Create Database for Faveo
-```
-yum install -y mariadb-server mariadb
-
-systemctl start mariadb
-
-mysql_secure_installation
-```
-The prompt will ask you for your current root password. Since you just installed MySQL, you most likely won’t have one, so leave it blank by pressing enter. Then the prompt will ask you if you want to set a root password. Go ahead and enter Y, and follow the instructions:
-
-
-![Mysql conf](https://faveohelpdesk.com/user-manual/images/faveoinstallation-centos7-apache/mariadb%20setup.png)
-
-
-```
-mysql -u root -p
-
-CREATE DATABASE faveo;
-
-GRANT ALL PRIVILEGES ON faveo.* TO 'faveouser'@'localhost' IDENTIFIED BY 'faveouserpass';
-
-FLUSH PRIVILEGES;
-
-quit
-```
-
-### Install ionCube Loader
-
-ionCube is not required for Community edition
-
-```
-wget http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
-
-tar xfz ioncube_loaders_lin_x86-64.tar.gz
-
-ls ioncube
-
-php -i | grep extension_dir
-```
-Copy the Path for PHP modules according to your php v
-```
-cp ioncube/ioncube_loader_lin_7.1.so /usr/lib64/php/modules
-
-where /usr/lib64/php/modules/ will be the php module path directory
-
-vi /etc/php.ini
-```
-
-Add the below line to php.ini file
-```
-zend_extension = /usr/lib64/php/modules/ioncube_loader_lin_7.1.so
-```
-By checking php version we can verify the loader installed version
-```
-php -v
-```
-
-### Install Composer by changing the directory to Faveo folder
-```
-curl -sS https://getcomposer.org/installer | php
-
-mv composer.phar /usr/bin/composer
-
-chmod +x /usr/bin/composer
-```
-
-## Copy Faveo Helpdesk from Github
-Faveo files can be manually uploaded to server or copied from Github, if you have access to Github account then use this step, else follow the next step
-Create a folder for Faveo and upload Faveo Help-Desk Community
-```
-mkdir -p /var/www/faveo/faveo-helpdesk
-
-git clone https://github.com/ladybirdweb/Faveo-Helpdesk-Pro.git /var/www/faveo/faveo-helpdesk
-
-```
-## OR Copy Faveo Helpdesk via SSH
-Incase you want to upload the Faveo files from your local system to your server and not use Github, then follow this step Download the Faveo zip file from our billing site https://www.faveohelpdesk.com Use a File transferring client like Filezilla, WinSCP to upload the files to our server directory. Open Filezilla and enter the root Credentials of the server and login.
-
-Create a folder for faveo inside that in the path /var/www/faveo/faveo-helpdesk
-
-Now continue the process by logging in back to ssh terminal
-
-### To upload files via SSH
-
-Login to the File directory
-```
-scp faveo.zip username@destination:/var/www/faveo
-```
-
-Once the transfer is completed unzip the faveo.zip file and rename it to faveo-helpdesk.
-For unzip tool installation and unzipping you can use the below command
-```
-yum install -y unzip
-```
-then
-```
-unzip faveo.zip
-```
-### Make sure that you have extracted all the files under that folder /var/www/faveo/faveo-helpdesk/
-
-### Give correct file permission to Faveo files
-```
-chown -R apache:apache /var/www/
-chown -R apache:apache /var/www/faveo/
-chown -R apache:apache /var/www/faveo/faveo-helpdesk/
-chmod -R 755 /var/www/
-chmod -R 755 /var/www/faveo/
-chmod -R 755 /var/www/faveo/faveo-helpdesk/
-chmod -R 755 /var/www/faveo/faveo-helpdesk/storage/
-chmod -R 755 /var/www/faveo/faveo-helpdesk/bootstrap/
-
-systemctl start httpd
-systemctl enable httpd
-```
-## Configure Apache
-```
-vi /etc/httpd/conf.d/faveo-helpdesk.conf
-```
-Copy the contents below to above file
-```
-<VirtualHost *:80>
-ServerName localhost
-ServerAdmin webmaster@localhost
-DocumentRoot /var/www/faveo/faveo-helpdesk/public
-<Directory /var/www/faveo/faveo-helpdesk>
-AllowOverride All
-</Directory>
-ErrorLog /var/log/httpd/faveo-error.log
-</VirtualHost>
-```
-
-Save and exit
- 
-### Restart Apache service
-```
-systemctl restart httpd.service
-```
-
-## Setup Cron
-Path can vary according to your server. This cron is set for every 1 minute fetching.
-```
-crontab -u apache -e
-* * * * * /usr/bin/php /var/www/faveo/faveo-helpdesk/artisan schedule:run >> /dev/null 2>&1
-```
-
-### Restart services
-```
-service mariadb restart
-
-systemctl restart httpd
-```
-
-## Start Installation
-
-Now you can install Faveo via [GUI](https://github.com/ladybirdweb/faveo-helpdesk/wiki/GUI-Install-Wizard) Wizard or [CLI](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Install-Faveo-via-CLI).
-
-You can access Faveo url in the browser
-
-**PS:** 
-* You have to reset the firewall and iptables to your specifications
-* You need to follow steps yourself to harden the security of your server, server security is not covered in this article
-* Redis is recommended for messaging que and improving system performance
-* Always use SSL/HTTPS URL for Faveo
-
+**Installation and Upgrade Guide**
+* [GUI Install Wizard](https://github.com/ladybirdweb/faveo-helpdesk/wiki/GUI-Install-Wizard)
+* [Manual Install](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Manual-Install)
+* [CLI Install](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Install-Faveo-via-CLI)
+* [Server Requirements](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Server-Requirements)
+* [Installation with Apache](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Installation-with-Apache-2.4)
+* [Installation with cPanel](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Installation-with-cPanel)
+* [Cron Job or any Job scheduler](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Cron-Job-or-any-Job-scheduler)
+* [Faveo Helpdesk Installation on CentOS 7 with Apache on PHP 7.1](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Helpdesk-Installation-on-CentOS-7-with-Apache-on-PHP-7.1)
+* [Faveo Helpdesk Installation on CentOS 7 with Nginx on PHP 7.1](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Helpdesk-Installation-on-CentOS-7-with-Nginx-on-PHP-7.1)
+
+* [Faveo Helpdesk Installation on Ubuntu 16.04 LTS with Apache on PHP 7.1](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Helpdesk-Installation-on-Ubuntu-16.04-LTS-with-Apache-on-PHP-7.1)
+* [Faveo Helpdesk Installation on Ubuntu 16.04 LTS with Nginx on PHP 7.1](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Helpdesk-Installation-on-Ubuntu-16.04-LTS-with-Nginx-on-PHP-7.1)
+* [Faveo Helpdesk Installation on Debian 9 with Nginx on PHP 7.1](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Helpdesk-Installation-on-Debian-9-with-Nginx-on-PHP-7.1)
+* [Faveo Helpdesk Installation on Debian 9 with Apache on PHP 7.1](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Helpdesk-Installation-on-Debian-9-with-Apache-on-PHP-7.1)
+* [Migrating Faveo from one server to another](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Migrating-Faveo-from-one-server-to-another)
+* [Configuration of Redis with Faveo](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Configuration-of-Redis-with-Faveo)
+* [Install and configure Redis, Supervisor and Worker for Faveo on Ubuntu 16.04](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Install-and-configure-Redis,-Supervisor-and-Worker-for-Faveo-on-Ubuntu-16.04)
+* [Install Let’s Encrypt SSL on CentOS 7 Running Apache Web Server](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Install-Let%E2%80%99s-Encrypt-SSL-on-CentOS-7-Running-Apache-Web-Server)
+* [Install and configure a simple mail server for sending mails using PHP mail function in Faveo on Ubuntu 16.04 server](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Install-and-configure-a-simple-mail-server-for-sending-mails-using-PHP-mail-function-in-Faveo-on-Ubuntu-16.04-server)
+* [Install and configure Redis, Supervisor and Worker for Faveo on Centos 7](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Install-and-configure-Redis,-Supervisor-and-Worker-for-Faveo-on-Centos-7)
+* [Install and configure a simple mail server for sending mails using PHP mail function in Faveo on Centos 7 server](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Install-and-configure-a-simple-mail-server-for-sending-mails-using-PHP-mail-function-in-Faveo-on-Centos-7-server)
+* [Faveo Helpdesk Pro Installation on Windows Server 2012 R2](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Helpdesk-Pro-Installation-on-Windows-Server-2012-R2)
+* [Install Active Directory Domain Services in Windows Server 2012 R2](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Install-Active-Directory-Domain-Services-in-Windows-Server-2012-R2)
+* [Install Faveo Helpdesk Community on Centos, Ubuntu or Debian Using Script](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Install-Faveo-Helpdesk-on-CentOS-Linux-7-(Core),-Ubuntu-18.04.1-LTS,-Ubuntu-16.04.5-LTS-or-Debian-GNU-Linux-9.5-(stretch)-Using-Script)
+* [Set up automatic backup for Faveo-Helpdesk](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Automatic-Backup-For-Faveo-Helpdesk)
+
+**Administrator's Guide**
+* [Faveo File Storage](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-File-Storage)
+* [Change client side theme color](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Change-client-side-theme-color)
+* [How to edit or change the footer in faveo](https://github.com/ladybirdweb/faveo-helpdesk/wiki/How-to-edit-or-change-the-footer-in-faveo)
+* [How to change agent and admin panel Faveo logo link and logo](https://github.com/ladybirdweb/faveo-helpdesk/wiki/How-to-change-agent-and-admin-panel-Faveo-logo-link-and-logo)
+* [Agents](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Agents)
+* [Departments](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Departments)
+* [Team](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Teams)
+* [Priority](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Priority)
+* [SLA](https://github.com/ladybirdweb/faveo-helpdesk/wiki/SLA-Plans)
+* [Workflow](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Workflow)
+* [Helptopic](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Helptopic)
+* [Default Ticket Settings](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Default-Ticket-Settings)
+* [Status](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Status)
+* [Rating](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Ratings)
+* [Close Ticket Workflow](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Close-Ticket-Workflow)
+* [Company Settings](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Company-Settings)
+* [Email](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Email-Configuration)
+* [Social Login](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Social-Login)
+* [Language](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Language)
+* [Security]( https://github.com/ladybirdweb/faveo-helpdesk/wiki/Security)
+* [Debugging/Logs]( https://github.com/ladybirdweb/faveo-helpdesk/wiki/Error-Logs-and-Debugging-Logs)
+* [Ban Emails]( https://github.com/ladybirdweb/faveo-helpdesk/wiki/Ban-Email)
+* [Widgets]( https://github.com/ladybirdweb/faveo-helpdesk/wiki/Widgets)
+
+
+
+**Agent's Guide**
+* [Dashboard](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Dashboard)
+* [User Profile](https://github.com/ladybirdweb/faveo-helpdesk/wiki/User-Profile)
+* [Knowledge Base](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Knowledge-Base)
+* [Internal Notes](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Internal-Notes)
+* [Assign ticket](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Assign-ticket)
+
+**Email Integration**
+
+* [How to check if outgoing email is working](https://github.com/ladybirdweb/faveo-helpdesk/wiki/How-to-check-if-outgoing-email-is-working)
+* [Attaching an email address with Faveo](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Attaching-an-email-address-with-Faveo)
+* [Email Setting](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Email-Setting)
+
+**Release & Upgrade Notes**
+* [General Faveo Upgrade Guide Manual](https://github.com/ladybirdweb/faveo-helpdesk/wiki/General-Faveo-Upgrade-Guide---Manual)
+* [General Faveo Upgrade Guide Auto](https://github.com/ladybirdweb/faveo-helpdesk/wiki/General-Faveo-Upgrade-Guide---Auto)
+* [Upgrade guide to v1.9.2](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Upgrade-guide-to-v1.9.2)
+* [Upgrade guide to v1.9.0](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Upgrade-guide-to-v1.9.0)
+* [How to update v1.0.7.9 to v1.0.8.0](https://github.com/ladybirdweb/faveo-helpdesk/wiki/How-to-update-v1.0.7.9-to-v1.0.8.0)
+* [Manual Upgrade from v1.0.7.8 to v1.0.7.9](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Manual-Upgrade-from-v1.0.7.8-to-v1.0.7.9)
+* [Faveo Release notes & upgrade guide for V1.0.7.7](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Release-notes-&-upgrade-guide-for-V1.0.7.7)
+* [Faveo Release notes & upgrade guide for V1.0.7.5](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Release-notes-&-upgrade-guide-for-V1.0.7.5)
+* [Faveo Release notes & upgrade guide for V1.0.7](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Release-notes-&-upgrade-guide-for-V1.0.7)
+
+**Known Issues**
+* [The open_basedir restriction in effect](https://github.com/ladybirdweb/faveo-helpdesk/wiki/The-open_basedir-restriction-in-effect)
+* [404 Not Found](https://github.com/ladybirdweb/faveo-helpdesk/wiki/404-Not-Found)
+* [500 Internal Server Error](https://github.com/ladybirdweb/faveo-helpdesk/wiki/500-Internal-Server-Error)
+* [Bug after update from 1.0.7.4 to 1.0.7.5 or higher version](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Bug-after-update-from-1.0.7.4-to-1.0.7.5-or-higher-version)
+* [Syntax error, unexpected ‘var’(T_VAR), expecting ‘;’](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Syntax-error,-unexpected-‘var’(T_VAR),-expecting-‘;’)
+
+**Contribute & Feedback**
+* [Support the community edition](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Support-the-community-edition)
+* [Contribution Guide](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Contribution-Guide)
+* [Faveo Feedback & Customisation](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Feedback-&-Customisation)
+* [Help in language translate](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Help-in-language-translate)
+
+**Knowledge Base**
+* [Category](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Category)
+* [Articles](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Articles)
+* [Pages](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Pages)
+* [Comments/Settings](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Comments-and-Settings-of-KB)
+
+**Third Party Integration**
+* [Google](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Login-with-Google)
+* [Facebook](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Social-login-with-Facebook)
+* [Twitter ](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Social-login-with-Twitter)
+* [Linkedin](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Social-login-with-Linkedin)
+* [Github](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Social-Login-with-Github)
+
+**Plugins**
+* [Configuring LDAP Authentication for Faveo](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Configuring-LDAP-Authentication-for-Faveo)
+* [Faveo Plugin creation guide](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Plugin-creation-guide)
+* [Faveo Event List](https://github.com/ladybirdweb/faveo-helpdesk/wiki/Faveo-Event-List)
+
+**API**
+* [All API's listed here](https://github.com/ladybirdweb/faveo-helpdesk/wiki/API-Documentation)
