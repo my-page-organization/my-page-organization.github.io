@@ -31,3 +31,6 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
+=======
+theme: jekyll-theme-cayman
+>>>>>>> 20b7e64b221038f0c5ea3586e6c01d05bff81c4d
