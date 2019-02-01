@@ -1,7 +1,6 @@
 title: "Faveo Manual Install Documentation"
 
-<<<<<<< HEAD
-theme: jekyll-theme-minimal
+theme: jekyll-theme-cayman
 
 share-links-active:
   twitter: true
@@ -12,6 +11,3 @@ share-links-active:
 plugins:
   - jekyll-paginate
   - jekyll-sitemap
-=======
-theme: jekyll-theme-cayman
->>>>>>> cb95f7747608bd6df203124d91d3b07f6acd7041
