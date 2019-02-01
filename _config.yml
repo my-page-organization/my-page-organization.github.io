@@ -38,13 +38,13 @@ disqus_shortname:   taylantatli
   #ad-slot:
 #bing-verify:
 #email:
-twitter:            username
-facebook:           username
-github-url:         username
+twitter:            https://twitter.com/faveohelpdesk?lang=en
+facebook:           https://www.facebook.com/faveohelpdesk/
+github-url:         https://github.com/ladybirdweb/faveo-helpdesk
 #stackoverflow:     123456/username   from a "http://stackoverflow.com/users/123456/username" link
 #linkedin:          username
 #xing:              username
-instagram:          username
+instagram:          https://www.instagram.com/faveohelpdesk/
 #lastfm:            username
 #tumblr:            username
 #medium:            '@username'
